@@ -91,8 +91,8 @@ async def remove_hyperlink(update: Update, context: ContextTypes.DEFAULT_TYPE):
             warning_text = (
                 f"⚠️ {create_user_mention(message.from_user)}, "
                 f"𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞!\n"
-                f"░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬▁▓▒░\n\n"
-                f"—<b>ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ</b>"
+                f"░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 & 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁▓▒░\n\n"
+                f"—<b>ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ</b>꧁TᕼᗩᑎKYOᑌ꧂"
             )
             await context.bot.send_message(chat_id=message.chat.id, text=warning_text, parse_mode="HTML", disable_web_page_preview=True)
     except Forbidden:
