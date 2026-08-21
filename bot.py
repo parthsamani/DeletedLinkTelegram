@@ -36,7 +36,7 @@ if not BOT_TOKEN:
 # WARNING COOLDOWN
 # ==========================================================
 
-WARNING_COOLDOWN = 60
+WARNING_COOLDOWN = 300
 
 last_warning_time = {}
 
