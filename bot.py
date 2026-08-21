@@ -353,12 +353,13 @@ async def remove_hyperlink(
             )
 
             warning_text = (
-                f"⚠️ {user_mention},"
-                f" 𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞! \n"
-                f" ░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 𝐚𝐧𝐝 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁▓▒░  \n\n"
-                f"— <b>✩ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ✩</b>"
-f"꧁TᕼᗩᑎKYOᑌ꧂\n"
+                f"⚠️ {user_mention}, "
+                f"𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞!\n"
+                f"▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 𝐚𝐧𝐝 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁\n\n"
+                f"—<b>ParthTraderAlerts_Bot</b>"
+                f"꧁TᕼᗩᑎKYOᑌ꧂\n"
             )
+          
             await context.bot.send_message(
                 chat_id=message.chat.id,
                 text=warning_text,
