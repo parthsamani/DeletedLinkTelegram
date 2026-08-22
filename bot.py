@@ -27,7 +27,7 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     if not msg or not msg.from_user: return
     if msg.from_user.is_bot: return
-    if msg.text and msg.text.startswith("/"): return # commands ignore
+    if msg.text and msg.text.startswith("/"): return
 
     text = (msg.text or msg.caption or "").lower()
     ents = msg.entities or msg.caption_entities or []
@@ -48,8 +48,8 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
 —ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ꧁TᕼᗩᑎKYOᑌ꧂"""
 
         sent = await context.bot.send_message(chat_id=msg.chat_id, text=warn_text)
-        # 10 sec baad warning auto delete - bina bot ko roke
-        context.job_queue.run_once(auto_delete_warning, 10, chat_id=msg.chat_id, data=sent.message_id)
+        # 300 sec = 5 minute baad auto delete
+        context.job_queue.run_once(auto_delete_warning, 300, chat_id=msg.chat_id, data=sent.message_id)
         
     except Exception as e:
         logging.error(f"Error: {e}")
@@ -58,7 +58,7 @@ def main():
     Thread(target=run_flask, daemon=True).start()
     app_bot = Application.builder().token(BOT_TOKEN).build()
     app_bot.add_handler(MessageHandler(filters.TEXT | filters.CAPTION, delete_link))
-    logging.info("Polling Started - No Sleep Mode")
+    logging.info("Polling Started - 5 min auto delete")
     app_bot.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
