@@ -9,7 +9,6 @@ BOT_TOKEN = os.getenv("BOT_TOKEN")
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
 
-# --- TRACKING SYSTEM DB SETUP ---
 db = sqlite3.connect("users.db", check_same_thread=False)
 db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, username TEXT, count INTEGER, last_seen TEXT)")
 db.execute("CREATE TABLE IF NOT EXISTS groups (chat_id INTEGER PRIMARY KEY, title TEXT, owner_id INTEGER, owner_name TEXT, added_on TEXT)")
@@ -31,8 +30,7 @@ def add_group(chat, user):
             db.execute("INSERT OR IGNORE INTO groups (chat_id, title, owner_id, owner_name, added_on) VALUES (?,?,?,?,?)",
                        (chat.id, chat.title, user.id, user.first_name, datetime.now().strftime("%d-%m-%Y %H:%M")))
             db.commit()
-    except Exception as e:
-        logging.error(f"Group DB Error: {e}")
+    except: pass
 
 @app.route('/')
 def home():
@@ -44,15 +42,12 @@ def home():
 def users_list():
     if request.args.get("key")!= "parth2580":
         return "Unauthorized - Wrong Key", 403
-
     groups = db.execute("SELECT * FROM groups ORDER BY added_on DESC").fetchall()
     users = db.execute("SELECT * FROM users ORDER BY last_seen DESC").fetchall()
-
-    html = f"<h2>Total Groups Using Bot: {len(groups)}</h2><table border=1 cellpadding=5><tr><th>Group ID</th><th>Group Name</th><th>Added By ID</th><th>Added By Name</th><th>Date</th></tr>"
+    html = f"<h2>Total Groups: {len(groups)}</h2><table border=1 cellpadding=5><tr><th>Group ID</th><th>Group Name</th><th>Added By ID</th><th>Added By Name</th><th>Date</th></tr>"
     for r in groups:
         html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
     html += "</table><br><br>"
-
     html += f"<h2>Total Users: {len(users)}</h2><table border=1 cellpadding=5><tr><th>ID</th><th>Name</th><th>Username</th><th>Msgs</th><th>Last Seen</th></tr>"
     for r in users:
         html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
@@ -75,19 +70,20 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not msg or not msg.from_user: return
     if msg.from_user.is_bot: return
     if msg.text and msg.text.startswith("/"): return
-
     text = (msg.text or msg.caption or "").lower()
     ents = msg.entities or msg.caption_entities or []
     has_link = bool(LINK_RE.search(text)) or any(e.type in ("url","text_link","mention") for e in ents)
-
     if not has_link: return
-
     try:
         member = await context.bot.get_chat_member(msg.chat_id, msg.from_user.id)
         if member.status in ('administrator','creator'): return
-
         await msg.delete()
         user = msg.from_user
         name = f"@{user.username}" if user.username else user.first_name
-
-        warn_text = f"""
+        warn_text = (
+            f"⚠️ {name} Link share karna mana hai! Aapka Message delete kar diya gaya hai.\n"
+            "🔗 Links are not allowed here! Don't Send any Link into this Group\n"
+            "░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 & 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.*▁▓▒░\n"
+            "–ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ꧁TᕼᗩᑎKYOᑌ꧂"
+        )
+        await context.bot.send
