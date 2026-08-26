@@ -95,7 +95,7 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.delete()
         name = f"@{update.message.from_user.username}" if update.message.from_user.username else update.message.from_user.first_name
         warn_text = (
-            f"⚠️ {name} Link share karna mana hai 🪬 Aapka Message delete 🚫 kar diya hai. «•»🔗 𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 ❌ 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞! «•» █▄◗Don't send Any Link 🖇️ into This Group.◗▄▌\n"
+            f"⚠️ {name} Link share karna mana hai 🪬 Aapka Message delete 🚫 kar diya hai. █▄◗«•»🔗 𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 ❌ 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞! Don't send Any Link 🖇️ into This Group.«•»◗▄▌\n"
 
             "░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 & 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁▓▒░\n"
             "~=❚█═ParthTraderAlerts_Bot═█❚=~꧁TᕼᗩᑎKYOᑌ꧂"
