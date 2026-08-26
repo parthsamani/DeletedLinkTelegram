@@ -3,13 +3,16 @@ from flask import Flask
 from threading import Thread
 from telegram import Update
 from telegram.ext import Application, MessageHandler, CommandHandler, filters, ContextTypes
-from datetime import datetime
+from datetime import datetime, timedelta
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = os.getenv("ADMIN_ID")
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__)
+
+def get_ist_time():
+    return (datetime.utcnow() + timedelta(hours=5, minutes=30)).strftime("%d-%m-%Y %H:%M:%S IST")
 
 db = sqlite3.connect("users.db", check_same_thread=False)
 db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, username TEXT, count INTEGER, last_seen TEXT)")
@@ -22,7 +25,7 @@ def track_user_db(user):
         uid = user.id
         name = user.first_name
         username = f"@{user.username}" if user.username else "No username"
-        now = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+        now = get_ist_time()
         cur = db.execute("SELECT count FROM users WHERE id=?", (uid,))
         row = cur.fetchone()
         if row:
@@ -36,7 +39,7 @@ def track_user_db(user):
 def track_group_db(chat, user):
     try:
         if chat.type in ['group','supergroup']:
-            now = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+            now = get_ist_time()
             cur = db.execute("SELECT chat_id FROM groups WHERE chat_id=?", (chat.id,))
             if not cur.fetchone():
                 db.execute("INSERT INTO groups (chat_id, title, owner_id, owner_name, added_on) VALUES (?,?,?,?,?)",
@@ -48,7 +51,7 @@ def track_group_db(chat, user):
 def home():
     total = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     gtotal = db.execute("SELECT COUNT(*) FROM groups").fetchone()[0]
-    return f"Bot Live! Total Users: {total} | Total Groups: {gtotal}"
+    return f"Bot Live! Total Users: {total} | Total Groups: {gtotal} | {get_ist_time()}"
 
 @app.route('/users_list')
 def users_list():
@@ -57,11 +60,11 @@ def users_list():
         return "Unauthorized - Wrong Key", 403
     groups = db.execute("SELECT * FROM groups ORDER BY added_on DESC").fetchall()
     rows = db.execute("SELECT * FROM users ORDER BY last_seen DESC").fetchall()
-    html = f"<h2>Total Groups Using Bot: {len(groups)}</h2><table border=1 cellpadding=5><tr><th>Group ID</th><th>Group Name</th><th>Added By (ID)</th><th>Added By (Name)</th><th>Date</th></tr>"
+    html = f"<h2>Total Groups Using Bot: {len(groups)}</h2><table border=1 cellpadding=5><tr><th>Group ID</th><th>Group Name</th><th>Added By (ID)</th><th>Added By (Name)</th><th>Date (IST)</th></tr>"
     for r in groups:
         html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
     html += "</table><br><br>"
-    html += "<h2>Total Users: " + str(len(rows)) + "</h2><table border=1 cellpadding=5><tr><th>ID</th><th>Name</th><th>Username</th><th>Msgs</th><th>Last Seen</th></tr>"
+    html += "<h2>Total Users: " + str(len(rows)) + "</h2><table border=1 cellpadding=5><tr><th>ID</th><th>Name</th><th>Username</th><th>Msgs</th><th>Last Seen (IST)</th></tr>"
     for r in rows:
         html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
     html += "</table>"
@@ -93,8 +96,7 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         name = f"@{update.message.from_user.username}" if update.message.from_user.username else update.message.from_user.first_name
         warn_text = (
             f"⚠️ {name} Link share karna mana hai 🪬 Aapka Message delete 🚫 kar diya hai. «•»🔗 𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 ❌ 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞! «•» █▄◗Don't send Any Link 🖇️ into This Group.◗▄▌\n"
-            
-            
+
             "░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 & 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁▓▒░\n"
             "~=❚█═ParthTraderAlerts_Bot═█❚=~꧁TᕼᗩᑎKYOᑌ꧂"
         )
@@ -115,7 +117,7 @@ async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     track_user_db(update.effective_user)
-    await update.message.reply_text("Welcome! I delete links & keep group clean.")
+    await update.message.reply_text("Welcome @DeletedLinkParthTraderAlerts_bot! Members Link Deleted only & keep group clean and safe. owner/admin Link not be deletes.")
 
 def main():
     Thread(target=run_flask, daemon=True).start()
