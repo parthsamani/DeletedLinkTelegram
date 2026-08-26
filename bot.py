@@ -12,6 +12,7 @@ app = Flask(__name__)
 # --- TRACKING SYSTEM DB SETUP ---
 db = sqlite3.connect("users.db", check_same_thread=False)
 db.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT, username TEXT, count INTEGER, last_seen TEXT)")
+db.execute("CREATE TABLE IF NOT EXISTS groups (chat_id INTEGER PRIMARY KEY, title TEXT, owner_id INTEGER, owner_name TEXT, added_on TEXT)")
 db.commit()
 
 def add_user(user):
@@ -24,18 +25,36 @@ def add_user(user):
     except Exception as e:
         logging.error(f"DB Error: {e}")
 
+def add_group(chat, user):
+    try:
+        if chat.type in ['group','supergroup']:
+            db.execute("INSERT OR IGNORE INTO groups (chat_id, title, owner_id, owner_name, added_on) VALUES (?,?,?,?,?)",
+                       (chat.id, chat.title, user.id, user.first_name, datetime.now().strftime("%d-%m-%Y %H:%M")))
+            db.commit()
+    except Exception as e:
+        logging.error(f"Group DB Error: {e}")
+
 @app.route('/')
-def home(): return "Bot Live!"
+def home():
+    u = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+    g = db.execute("SELECT COUNT(*) FROM groups").fetchone()[0]
+    return f"Bot Live! Users: {u} | Groups: {g}"
 
 @app.route('/users_list')
 def users_list():
-    # Password protection - link aise khulega /users_list?key=parth123
     if request.args.get("key")!= "parth2580":
         return "Unauthorized - Wrong Key", 403
 
-    rows = db.execute("SELECT * FROM users ORDER BY last_seen DESC").fetchall()
-    html = f"<h2>Total Users: {len(rows)}</h2><table border=1 cellpadding=5><tr><th>ID</th><th>Name</th><th>Username</th><th>Msgs</th><th>Last Seen</th></tr>"
-    for r in rows:
+    groups = db.execute("SELECT * FROM groups ORDER BY added_on DESC").fetchall()
+    users = db.execute("SELECT * FROM users ORDER BY last_seen DESC").fetchall()
+
+    html = f"<h2>Total Groups Using Bot: {len(groups)}</h2><table border=1 cellpadding=5><tr><th>Group ID</th><th>Group Name</th><th>Added By ID</th><th>Added By Name</th><th>Date</th></tr>"
+    for r in groups:
+        html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
+    html += "</table><br><br>"
+
+    html += f"<h2>Total Users: {len(users)}</h2><table border=1 cellpadding=5><tr><th>ID</th><th>Name</th><th>Username</th><th>Msgs</th><th>Last Seen</th></tr>"
+    for r in users:
         html += f"<tr><td>{r[0]}</td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[4]}</td></tr>"
     html += "</table>"
     return html
@@ -46,14 +65,16 @@ def run_flask():
 
 LINK_RE = re.compile(r"https?://|www\.|t\.me/|telegram\.me|@\w+|discord\.gg", re.I)
 
+async def track_all(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message and update.message.from_user:
+        add_user(update.message.from_user)
+        add_group(update.message.chat, update.message.from_user)
+
 async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     if not msg or not msg.from_user: return
     if msg.from_user.is_bot: return
     if msg.text and msg.text.startswith("/"): return
-
-    # Tracking call
-    add_user(msg.from_user)
 
     text = (msg.text or msg.caption or "").lower()
     ents = msg.entities or msg.caption_entities or []
@@ -69,22 +90,4 @@ async def delete_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = msg.from_user
         name = f"@{user.username}" if user.username else user.first_name
 
-        warn_text = f"""⚠️ {name} Link share karna mana hai! Message delete kar diya gaya hai. 🔗 𝐋𝐢𝐧𝐤𝐬 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐥𝐥𝐨𝐰𝐞𝐝 𝐡𝐞𝐫𝐞!
-░▒▓▁𝐏𝐥𝐞𝐚𝐬𝐞 𝐅𝐨𝐥𝐥𝐨𝐰 𝐓𝐡𝐞 𝐆𝐫𝐨𝐮𝐩 𝐑𝐮𝐥𝐞𝐬 & 𝐀𝐯𝐨𝐢𝐝 𝐒𝐡𝐚𝐫𝐢𝐧𝐠 𝐒𝐮𝐜𝐡 𝐂𝐨𝐧𝐭𝐞𝐧𝐭.▁▓▒░
-—ᴾᵃʳᵗʰᵀʳᵃᵈᵉʳᴬˡᵉʳᵗˢ_ᴮᵒᵗ꧁TᕼᗩᑎKYOᑌ꧂"""
-
-        # Warning delete nahi hoga ab
-        await context.bot.send_message(chat_id=msg.chat_id, text=warn_text)
-
-    except Exception as e:
-        logging.error(f"Error: {e}")
-
-def main():
-    Thread(target=run_flask, daemon=True).start()
-    app_bot = Application.builder().token(BOT_TOKEN).build()
-    app_bot.add_handler(MessageHandler(filters.TEXT | filters.CAPTION, delete_link))
-    logging.info("Polling Started - Warning will NOT auto delete")
-    app_bot.run_polling(drop_pending_updates=True)
-
-if __name__ == "__main__":
-    main()
+        warn_text = f"""
